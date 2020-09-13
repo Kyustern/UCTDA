@@ -7,7 +7,7 @@ interface RootState {
     todos: Todo[]
 }
 
-const firstTodo: Todo = {title: 'first of its kind', description: 'patience is virtue and fffffffffffucjkckgvsonvlsc', done: false}
+const firstTodo = {title: 'first of its kind', description: 'patience is virtue and fffffffffffucjkckgvsonvlsc', done: false} as Todo
 
 export const todoSlice = createSlice({
     name: 'todo',
@@ -16,9 +16,7 @@ export const todoSlice = createSlice({
 
     reducers: {
         addTodo: (state: RootState, action): void => {
-            console.log("action", action)
-            state.todos.push(action.payload.todo)
-            // state.todos = [...state.todos, action.payload]
+            state.todos.push(action.payload)
         },
         removeTodo: (state: RootState, action): void => {
             state.todos.splice(action.payload)
@@ -28,6 +26,7 @@ export const todoSlice = createSlice({
 
 export const { addTodo, removeTodo } = todoSlice.actions
 
-export const selectTodos = (state: RootState): Todo[] => state.todos
+//   w   t   f
+export const selectTodos = (state: any): Todo[] => state.todos.todos
 
 export default todoSlice.reducer

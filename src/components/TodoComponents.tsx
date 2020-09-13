@@ -3,21 +3,27 @@ import styled from 'styled-components';
 import { Todo } from '../app/types';
 import { Card, Typography } from '@material-ui/core';
 import { ReactComponent as Done } from '../svg/done.svg'
+import { ReactComponent as NotDone } from '../svg/warning.svg'
 
 interface Props {
     Todo: Todo
+    keyProp: number
 }
 
-export const TodoComponent: React.FC<Props> = () => {
+export const TodoComponent: React.FC<Props> = ({Todo}) => {
     return (
         <TodoCard>
             <h4 className="title">
-                Leu titr
+                {Todo.title}
             </h4>
-            <Done />
+            <div className="status">
+                {Todo.done ? <Done/> : <NotDone/> }
+                <div className="timer">
+                    sample text
+                </div>
+            </div>
             <Typography className="description">
-                Leu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titr
-                Leu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titrLeu titr
+                {Todo.description}
             </Typography>
         </TodoCard>
     )
@@ -35,11 +41,28 @@ const TodoCard = styled(Card)`
     grid-template-areas:
     "title status"
     "description status";
+
+    .status {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 0.2fr;
+        grid-template-areas:
+            "icon"
+            "timer";
+        grid-area: status;
+    }
+
+    .timer {
+        grid-area: timer;
+    }
+
     svg {
         margin: auto;
         width: 50%;
         height: 100%;
-        grid-area: status;
+        grid-area: icon;
     }
 
     .title {

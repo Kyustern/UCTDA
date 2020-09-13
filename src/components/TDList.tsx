@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components';
 import Button from '@material-ui/core/Button'
 import { useSelector, useDispatch } from 'react-redux';
-import { selectTodos, addTodo } from "../features/todoSlice";
+import { selectTodos, addTodo, todoSlice } from "../features/todoSlice";
 import { Todo } from '../app/types';
 import { TodoComponent } from './TodoComponents';
 
@@ -12,29 +12,39 @@ export const TDList: React.FC = () => {
 
     const todos = useSelector(selectTodos)
 
-    useEffect(() => {
-        console.log("TDList:React.FC -> todos", todos)
+    useEffect((): void => {
+        console.log("TDList:React.FC -> todo", todos)
     }, [todos])
 
-const btnHandler = () => {
-    dispatch(addTodo({title: 'first of its kind', description: 'patience is virtue and fffffffffffucjkckgvsonvlsc', done: false}))
-}
+    const btnHandler = (): void => {
+        dispatch(addTodo(
+            { title: 'first of its kind', description: 'patience is  aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett', done: false } as Todo
+        ))
+    }
 
-return (
-    <Wrapper>
-        <CustomButton
-            variant="contained"
-            color="secondary"
-            size="large"
-            startIcon={<span className="material-icons">add</span>}
-            onClick={() => btnHandler()}
-        >
-            Create
-        </CustomButton>
+    const renderTodos = () => {
+        if (todos) {
+            todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)            
+        }
+    }
 
-        {/* {todos.map((todo: Todo) => <TodoComponent Todo={todo}/>)} */}
-    </Wrapper>
-)
+    return (
+        <Wrapper>
+            <CustomButton
+                variant="contained"
+                color="secondary"
+                size="large"
+                startIcon={<span className="material-icons">add</span>}
+                onClick={() => btnHandler()}
+            >
+                Create
+            </CustomButton>
+            {
+                todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)
+            }
+
+        </Wrapper>
+    )
 }
 
 const CustomButton = styled(Button)`

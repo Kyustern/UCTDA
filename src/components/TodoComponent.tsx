@@ -1,29 +1,74 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
 import { Card, Typography } from '@material-ui/core';
 import { ReactComponent as Done } from '../svg/done.svg'
 import { ReactComponent as NotDone } from '../svg/warning.svg'
+import { ReactComponent as Alarm } from '../svg/alarm.svg'
 
 interface Props {
-    Todo: Todo
+    todoProp: Todo
     keyProp: number
 }
 
-export const TodoComponent: React.FC<Props> = ({Todo}) => {
+const getWDHM = (seconds: number): string => {
+    //returns the weeks or days or Hours or Minutes
+
+    const plurial = (n: number) => n > 1 ? 's' : ''
+
+    if (seconds > 604800) {
+        const n = Math.floor(seconds / 604800)
+        return `${n} week${plurial(n)} left`
+    } else if(seconds > 86400) {
+        const n = Math.floor(seconds / 86400)
+        return `${n} day${plurial(n)} left`
+    } else if(seconds > 3600) {
+        const n = Math.floor(seconds / 3600)
+        return `${n} hour${plurial(n)} left`
+    } else if(seconds > 60) {
+        const n = Math.floor(seconds / 60)
+        return `${n} minute${plurial(n)} left`
+    }
+
+    return ''
+}
+
+const getStatus = (todo: Todo): string => {
+    if (!todo.duration) {
+        return 'not done :('
+    }
+    const deadLine = todo.creationTimeStamp + todo.duration
+    const remainingTime = deadLine - Math.floor(Date.now() / 1000)
+    return getWDHM(remainingTime)
+}
+
+const getSvg = (todo: Todo): JSX.Element => {
+    if (todo.done === true) {
+        return <Done />
+    } else {
+        if (todo.duration) {
+            return <Alarm />
+        } else {
+            return <NotDone />
+        }
+    }
+}
+
+export const TodoComponent: React.FC<Props> = ({ todoProp }) => {
+
     return (
         <TodoCard>
             <h4 className="title">
-                {Todo.title}
+                {todoProp.title}
             </h4>
             <div className="status">
-                {Todo.done ? <Done/> : <NotDone/> }
+                {getSvg(todoProp)}
                 <div className="timer">
-                    sample text
+                    {todoProp.done ? 'done :)' : getStatus(todoProp)}
                 </div>
             </div>
             <Typography className="description">
-                {Todo.description}
+                {todoProp.description}
             </Typography>
         </TodoCard>
     )

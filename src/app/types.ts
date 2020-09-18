@@ -3,10 +3,12 @@ import { type } from "os"
 // export const ADD_TODO = 'ADD_TODO'
 // export const RM_TODO = 'RM_TODO'
 
-export interface Todo {
+export type Todo = {
     title: string
     description: string
     done: boolean
+    duration ? : number
+    creationTimeStamp: number
 }
 
 // export type addTodoAction = {

@@ -4,7 +4,8 @@ import Button from '@material-ui/core/Button'
 import { useSelector, useDispatch } from 'react-redux';
 import { selectTodos, addTodo, todoSlice } from "../features/todoSlice";
 import { Todo } from '../app/types';
-import { TodoComponent } from './TodoComponents';
+import { TodoComponent } from './TodoComponent';
+import { TodoEditor } from './TodoEditor'
 
 export const TDList: React.FC = () => {
 
@@ -22,11 +23,11 @@ export const TDList: React.FC = () => {
         ))
     }
 
-    const renderTodos = () => {
-        if (todos) {
-            todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)            
-        }
-    }
+    // const renderTodos = () => {
+    //     if (todos) {
+    //         todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)            
+    //     }
+    // }
 
     return (
         <Wrapper>
@@ -39,8 +40,9 @@ export const TDList: React.FC = () => {
             >
                 Create
             </CustomButton>
+            <TodoEditor />
             {
-                todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)
+                todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} todoProp={todo} />)
             }
 
         </Wrapper>

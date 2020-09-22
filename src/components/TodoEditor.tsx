@@ -1,32 +1,60 @@
 import React, { useState } from 'react'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
-import { Card, Input, Button, duration } from '@material-ui/core'
+import { Switch } from './Switch'
+import { Card, Input, Button, IconButton } from '@material-ui/core'
 import { DurationInput } from './ImprovisedDurationInput';
+import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
+import { useDispatch } from 'react-redux';
+import { addTodo } from '../features/todoSlice';
+import { SnackBarWrapper } from './SnackBarWrapper';
 
 interface Props {
     todoProp?: Todo
 }
 
+const getDateString = (timeStamp: number): string => {
+    const dateObj = new Date(timeStamp)
+    return `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`
+}
+
 export const TodoEditor: React.FC<Props> = () => {
 
+    const dispatch = useDispatch()
+
+    const [showError, setShowError] = useState(false)
+    const [errorText, setErrorText] = useState('')
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
     const [showClock, setShowClock] = useState(false)
-    const [date, setDate] = useState<number>(Date.now() + 604800)
+    const [date, setDate] = useState('')
     const [duration, setDuration] = useState<number | undefined>(undefined)
 
-    const getDateString = (timeStamp: number): string => {
-        const dateObj = new Date(timeStamp)
-        return `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`
+    const textInputHandler = (event: any, target: string) => {
+        switch (target) {
+            case 'Title':
+                setTitle(event.target.value)
+                break;
+            case 'Description':
+                setDescription(event.target.value)
+            default:
+                break;
+        }
     }
 
     const dateInputHandler = (event: any): void => {
         const now = Date.now()
-        const selection = Date.parse(event.target.value)
-        console.log("selection", selection)
-        if (selection <= now) {
+        const dateString = event.target.value
+        const dateTimeStamp = Date.parse(event.target.value)
+        console.log("dateTimeStamp", dateTimeStamp)
+        if (dateTimeStamp <= now) {
             console.log("pas good");
+            //Render a SnackBar component that describes the error
         } else {
-            setDate(selection)
+            setDate(dateString)
+            console.log("dateTimeStamp", dateTimeStamp)
             console.log("event.target.value", event.target.value)
         }
     }
@@ -35,69 +63,84 @@ export const TodoEditor: React.FC<Props> = () => {
         setDuration(input)
         console.log("getter -> input", input)
     }
-    
+
+    const validationHandler = () => {
+        if (!title || !description || !date) {
+            setErrorText('Please give a title, a description, and a deadline')
+            setShowError(true)
+        } else {
+            dispatch(addTodo(
+                {
+                    title: title, 
+                    description: description, 
+                    done: false, 
+                    creationTimeStamp: Date.now()
+                }
+            ))
+        }
+    }
+
 
     return (
-        <TodoCard>
-            <Input placeholder="Title" />
-            <Input placeholder="Description" multiline={true} rows={5} />
-            <div className="dateTimeSelector">
-                <div className="switch">
-                    <Button 
-                        color={showClock ? 'default' : 'secondary'}
-                        variant={showClock ? 'outlined' : 'contained'}
-                        onClick={() => setShowClock(false)}
+        <>
+            <SnackBarWrapper 
+                close={(bool) => setShowError(bool)}
+                text={errorText}
+                isOpen={showError}
+            />
+            <TodoCard>
+                <Input
+                    placeholder="Title"
+                    value={title}
+                    onChange={(event) => textInputHandler(event, 'Title')}
+                />
+                <Input
+                    placeholder="Description"
+                    multiline={true}
+                    rows={5}
+                    value={description}
+                    onChange={(event) => textInputHandler(event, 'Description')}
+                />
+                <div className="dateTimeSelector">
+                <Switch 
+                    onOff={showClock} 
+                    setBoolean={setShowClock} 
+                    buttonText={{right: 'Time', left: 'Date'}} 
+                />
+                    {showClock ?
+                        <DurationInput getter={getterCB} />
+                        :
+                        <Input
+                            onChange={dateInputHandler}
+                            value={date}
+                            type="date"
+                        />
+                    }
 
-                    >
-                        Date
-                    </Button>
-                    <Button 
-                        color={showClock ? 'secondary' : 'default'}
-                        variant={showClock ? 'contained' : 'outlined'}
-                        onClick={() => setShowClock(true)}
-                    >
-                        Time
-                    </Button>
                 </div>
-                {showClock ? 
-                    <DurationInput getter={getterCB}/>
-                : 
-                    <Input
-                        onChange={dateInputHandler}
-                        value={date} 
-                        type="date"
-                    />
-                }
-
-            </div>
-            <div>buttons</div>
-        </TodoCard>
+                <div className="buttonRack">
+                    <IconButton
+                        onClick={validationHandler}
+                        color="secondary" 
+                        aria-label="Add task"
+                    >
+                        <AddIcon />
+                    </IconButton>
+                    <IconButton aria-label="Cancel task">
+                        <DeleteIcon />
+                    </IconButton>
+                </div>
+            </TodoCard>
+        </>
     )
 }
-
-const DualButton = styled(Button)`
-  
-`;
-
-
-const Wrapper = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-`;
 
 const TodoCard = styled(Card)`
     padding: 0 0.25em 0 0.25em;
     width: 95%;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 0.5fr 6em  1fr 1fr;
+    grid-template-rows: 0.5fr 6em  1fr auto;
     gap: 1px 1px;
     grid-template-areas:
     "title"
@@ -111,16 +154,19 @@ const TodoCard = styled(Card)`
         align-items: center;
     }
 
-    .switch {
+    .buttonRack > * {
         margin-right: 1em;
+        margin-left: 1em;
+        margin-bottom: 0.5em;
     }
 
-    .switch button:first-child {
-        border-radius: 10px 0 0 10px !important;
-    }
-
-    .switch button:last-child {
-        border-radius: 0 10px 10px 0 !important;
+    .buttonRack {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        svg {
+            height: 30px !important;
+        }
     }
 
 `;

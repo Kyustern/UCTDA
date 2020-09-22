@@ -6,11 +6,11 @@ import { selectTodos, addTodo, todoSlice } from "../features/todoSlice";
 import { Todo } from '../app/types';
 import { TodoComponent } from './TodoComponent';
 import { TodoEditor } from './TodoEditor'
+import AddIcon from '@material-ui/icons/Add';
 
 export const TDList: React.FC = () => {
 
     const dispatch = useDispatch()
-
     const todos = useSelector(selectTodos)
 
     useEffect((): void => {
@@ -23,19 +23,13 @@ export const TDList: React.FC = () => {
         ))
     }
 
-    // const renderTodos = () => {
-    //     if (todos) {
-    //         todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} Todo={todo} />)            
-    //     }
-    // }
-
     return (
         <Wrapper>
             <CustomButton
                 variant="contained"
                 color="secondary"
                 size="large"
-                startIcon={<span className="material-icons">add</span>}
+                startIcon={<AddIcon />}
                 onClick={() => btnHandler()}
             >
                 Create

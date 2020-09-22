@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "@reduxjs/toolkit": "^1.4.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -24,6 +25,7 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
+    "dev": "react-scripts start && code .",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

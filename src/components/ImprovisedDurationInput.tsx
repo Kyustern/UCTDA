@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import React, {useState, useEffect} from 'react'
-import { MenuItem, Select, InputLabel, Input, FormControl } from '@material-ui/core';
+import { MenuItem, Select, Input } from '@material-ui/core';
 
 interface Props {
     getter: (input: number) => void

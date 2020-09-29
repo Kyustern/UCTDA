@@ -9,12 +9,14 @@ interface Props {
         left: string
         right: string
     }
+    disabled?: boolean
 }
 
-export const Switch: React.FC<Props> = ({ onOff, setBoolean, buttonText }) => {
+export const Switch: React.FC<Props> = ({ onOff, setBoolean, buttonText, disabled }) => {
     return (
         <Wrapper>
             <Button
+                disabled={disabled}
                 color={onOff ? 'default' : 'secondary'}
                 variant={onOff ? 'outlined' : 'contained'}
                 onClick={() => setBoolean(false)}
@@ -22,6 +24,7 @@ export const Switch: React.FC<Props> = ({ onOff, setBoolean, buttonText }) => {
                 {buttonText.left}
             </Button>
             <Button
+                disabled={disabled}
                 color={onOff ? 'secondary' : 'default'}
                 variant={onOff ? 'contained' : 'outlined'}
                 onClick={() => setBoolean(true)}

@@ -1,14 +1,20 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components';
 import Button from '@material-ui/core/Button'
 import { useSelector, useDispatch } from 'react-redux';
-import { selectTodos, addTodo, todoSlice } from "../features/todoSlice";
+import { selectTodos, addTodo } from "../features/todoSlice";
 import { Todo } from '../app/types';
 import { TodoComponent } from './TodoComponent';
 import { TodoEditor } from './TodoEditor'
 import AddIcon from '@material-ui/icons/Add';
+import { FullscreenTodoEditor } from './FullscreenTodoEditor';
+import { idText } from 'typescript';
 
 export const TDList: React.FC = () => {
+
+    const [creatingTodo, setCreatingTodo] = useState(false)
+    const [selectedTodo, setSelectedTodo] = useState(0)
+    const [editingTodo, setEditingTodo] = useState(false)
 
     const dispatch = useDispatch()
     const todos = useSelector(selectTodos)
@@ -23,6 +29,10 @@ export const TDList: React.FC = () => {
         ))
     }
 
+    const selectTodo = (id: number) => {
+        setSelectedTodo(id)
+        setEditingTodo(true)
+    }
     return (
         <Wrapper>
             <CustomButton
@@ -34,10 +44,25 @@ export const TDList: React.FC = () => {
             >
                 Create
             </CustomButton>
-            <TodoEditor />
             {
-                todos.map((todo: Todo, index: number) => <TodoComponent key={index} keyProp={index} todoProp={todo} />)
+                creatingTodo && 
+                <TodoEditor 
+                    cancelButtonHandler={() => setCreatingTodo(false)}
+                />
             }
+            {
+                todos.map((todo: Todo, index: number) => <TodoComponent key={index}keyProp={index} todoProp={todo} selectTodo={selectTodo} />)
+            }
+
+            {
+            editingTodo &&
+                <FullscreenTodoEditor 
+                    todoProp={todos[0]} 
+                    id={0} 
+                    cancelButtonHandler={() => setEditingTodo(false)} 
+                />
+            }
+            
 
         </Wrapper>
     )
@@ -52,6 +77,7 @@ const CustomButton = styled(Button)`
 `;
 
 const Wrapper = styled.div`
+    transition: all 0.2s ease-in-out;
     grid-area: todos;
     display: flex;
     align-items: center;

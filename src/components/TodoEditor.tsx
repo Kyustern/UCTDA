@@ -1,18 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
 import { Switch } from './Switch'
-import { Card, Input, Button, IconButton } from '@material-ui/core'
+import { Card, Input, Button, Checkbox } from '@material-ui/core'
 import { DurationInput } from './ImprovisedDurationInput';
 import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 import { useDispatch } from 'react-redux';
-import { addTodo } from '../features/todoSlice';
+import { addTodo, editTodo } from '../features/todoSlice';
 import { SnackBarWrapper } from './SnackBarWrapper';
+
+//lol
+//07 82 56 07 14
 
 interface Props {
     todoProp?: Todo
+    id?: number
+    cancelButtonHandler: () => void
 }
 
 const getDateString = (timeStamp: number): string => {
@@ -20,17 +24,35 @@ const getDateString = (timeStamp: number): string => {
     return `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`
 }
 
-export const TodoEditor: React.FC<Props> = () => {
+const getRemainingTime = (deadline: string) => {
+    const deadlineTimeStamp = Date.parse(deadline)
+    const temp = deadlineTimeStamp - Date.now()
+    return temp
+}
+
+export const TodoEditor: React.FC<Props> = ({todoProp, id, cancelButtonHandler}) => {
+
+    const dateinit = (todo?: Todo) => {
+        if (todo) {
+            if (todo.creationTimeStamp) {
+                return getDateString(todo.creationTimeStamp)
+            } else {
+                return ''
+            }
+        }
+        return ''
+    }
 
     const dispatch = useDispatch()
 
-    const [showError, setShowError] = useState(false)
+    const [date, setDate] = useState(dateinit(todoProp))
     const [errorText, setErrorText] = useState('')
-    const [title, setTitle] = useState('')
-    const [description, setDescription] = useState('')
+    const [title, setTitle] = useState(todoProp ? todoProp.title : '')
+    const [description, setDescription] = useState(todoProp ? todoProp.description : '')
+    const [showError, setShowError] = useState(false)
     const [showClock, setShowClock] = useState(false)
-    const [date, setDate] = useState('')
-    const [duration, setDuration] = useState<number | undefined>(undefined)
+    const [hasDeadline, setHasDeadline] = useState(false)
+    const [duration, setDuration] = useState(todoProp ? todoProp.duration ? todoProp.duration : 604800 : 604800)
 
     const textInputHandler = (event: any, target: string) => {
         switch (target) {
@@ -39,6 +61,7 @@ export const TodoEditor: React.FC<Props> = () => {
                 break;
             case 'Description':
                 setDescription(event.target.value)
+                break;
             default:
                 break;
         }
@@ -48,42 +71,58 @@ export const TodoEditor: React.FC<Props> = () => {
         const now = Date.now()
         const dateString = event.target.value
         const dateTimeStamp = Date.parse(event.target.value)
-        console.log("dateTimeStamp", dateTimeStamp)
         if (dateTimeStamp <= now) {
-            console.log("pas good");
             //Render a SnackBar component that describes the error
         } else {
             setDate(dateString)
-            console.log("dateTimeStamp", dateTimeStamp)
-            console.log("event.target.value", event.target.value)
         }
+    }
+
+    const validationHandler = () => {
+        if (!title || !description) {
+            setErrorText('Please give at least a description and a title')
+            setShowError(true)
+        } else {
+            const todo = {
+                title: title,
+                description: description,
+                done: false,
+                creationTimeStamp: Date.now()
+            } as Todo
+
+            if (hasDeadline) {
+                if (!showClock) {
+                    //duration will be equal to the number of seconds between Date.now and the selected date
+                    todo.duration = getRemainingTime(date)
+                    if (todoProp) {
+                        dispatch(editTodo({todo, id}))
+                    } else {
+                        dispatch(addTodo(todo))
+                    }
+                } else {
+                    //duration is in seconds, we have to convert to milliseconds so it can be compatible with other stuff
+                    todo.duration = duration * 1000
+                    dispatch(addTodo(todo))
+                }
+            } else {
+                dispatch(addTodo(todo))
+            }
+
+            cancelButtonHandler()
+        }
+    }
+
+    const checkBoxHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHasDeadline(event.target.checked)
     }
 
     const getterCB = (input: number) => {
         setDuration(input)
-        console.log("getter -> input", input)
     }
-
-    const validationHandler = () => {
-        if (!title || !description || !date) {
-            setErrorText('Please give a title, a description, and a deadline')
-            setShowError(true)
-        } else {
-            dispatch(addTodo(
-                {
-                    title: title, 
-                    description: description, 
-                    done: false, 
-                    creationTimeStamp: Date.now()
-                }
-            ))
-        }
-    }
-
 
     return (
         <>
-            <SnackBarWrapper 
+            <SnackBarWrapper
                 close={(bool) => setShowError(bool)}
                 text={errorText}
                 isOpen={showError}
@@ -102,15 +141,22 @@ export const TodoEditor: React.FC<Props> = () => {
                     onChange={(event) => textInputHandler(event, 'Description')}
                 />
                 <div className="dateTimeSelector">
-                <Switch 
-                    onOff={showClock} 
-                    setBoolean={setShowClock} 
-                    buttonText={{right: 'Time', left: 'Date'}} 
-                />
+                    <Checkbox
+                        checked={hasDeadline}
+                        onChange={checkBoxHandler}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
+                    />
+                    <Switch
+                        disabled={!hasDeadline}
+                        onOff={showClock}
+                        setBoolean={setShowClock}
+                        buttonText={{ left: 'Date', right: 'Time' }}
+                    />
                     {showClock ?
                         <DurationInput getter={getterCB} />
                         :
                         <Input
+                            disabled={!hasDeadline}
                             onChange={dateInputHandler}
                             value={date}
                             type="date"
@@ -119,16 +165,22 @@ export const TodoEditor: React.FC<Props> = () => {
 
                 </div>
                 <div className="buttonRack">
-                    <IconButton
+                    <Button
                         onClick={validationHandler}
-                        color="secondary" 
+                        color="secondary"
                         aria-label="Add task"
+                        startIcon={<AddIcon />}
                     >
-                        <AddIcon />
-                    </IconButton>
-                    <IconButton aria-label="Cancel task">
-                        <DeleteIcon />
-                    </IconButton>
+                        Confirm
+                    </Button>
+                    <Button
+                        onClick={() => cancelButtonHandler()}
+                        aria-label="Cancel task"
+                        variant="outlined"
+                        startIcon={<CloseIcon />}
+                    >
+                        Cancel
+                    </Button>
                 </div>
             </TodoCard>
         </>
@@ -168,5 +220,4 @@ const TodoCard = styled(Card)`
             height: 30px !important;
         }
     }
-
 `;

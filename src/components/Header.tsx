@@ -17,5 +17,6 @@ const Title = styled.h1`
 const Wrapper = styled.div`
     grid-area: header;
     width: 100%;
-    background-color: var(--light-grey);
+    background: rgb(245,0,87);
+    background: linear-gradient(0deg, rgba(245,0,87,1) 0%, rgba(63,81,181,1) 100%); 
 `;

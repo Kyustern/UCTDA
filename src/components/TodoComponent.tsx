@@ -1,33 +1,49 @@
-import React, { useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
-import { Card, Typography } from '@material-ui/core';
+import { Button, Card } from '@material-ui/core';
 import { ReactComponent as Done } from '../svg/done.svg'
 import { ReactComponent as NotDone } from '../svg/warning.svg'
 import { ReactComponent as Alarm } from '../svg/alarm.svg'
+import EditIcon from '@material-ui/icons/Edit';
+import ExpandMoreSharpIcon from '@material-ui/icons/ExpandMoreSharp';
 
-interface Props {
-    todoProp: Todo
-    keyProp: number
+const isBetween = (a: number, b: number, x: number): boolean => {
+    return x >= a && x < b
 }
+const isExpired = (n: number) => {
+    if (n < 0) {
+        return 'since deadline'
+    } else if (n > 0) {
+        return 'left'
+    } else {
+        return ''
+    }
+}
+const plurial = (n: number) => n > 1 ? 's' : ''
 
-const getWDHM = (seconds: number): string => {
+// const expired = (n: number) => n <= 0 ? 'since deadline' : 'left'
+
+const getWDHM = (milliseconds: number): string => {
     //returns the weeks or days or Hours or Minutes
+    const seconds = Math.round(milliseconds / 1000)
+    const absoluteValue = Math.abs(seconds)
 
-    const plurial = (n: number) => n > 1 ? 's' : ''
+    if (absoluteValue >= 604800) {
+        const n = Math.round(absoluteValue / 604800)
+        return `${n} week${plurial(n)} ${isExpired(seconds)}`
 
-    if (seconds > 604800) {
-        const n = Math.floor(seconds / 604800)
-        return `${n} week${plurial(n)} left`
-    } else if(seconds > 86400) {
-        const n = Math.floor(seconds / 86400)
-        return `${n} day${plurial(n)} left`
-    } else if(seconds > 3600) {
-        const n = Math.floor(seconds / 3600)
-        return `${n} hour${plurial(n)} left`
-    } else if(seconds > 60) {
-        const n = Math.floor(seconds / 60)
-        return `${n} minute${plurial(n)} left`
+    } else if (isBetween(86400, 604800, absoluteValue)) {
+        const n = Math.round(absoluteValue / 86400)
+        return `${n} day${plurial(n)} ${isExpired(seconds)}`
+
+    } else if (isBetween(3600, 86400, absoluteValue)) {
+        const n = Math.round(absoluteValue / 3600)
+        return `${n} hour${plurial(n)} ${isExpired(seconds)}`
+
+    } else if (isBetween(60, 3600, absoluteValue)) {
+        const n = Math.round(absoluteValue / 60)
+        return `${n} minute${plurial(n)} ${isExpired(seconds)}`
     }
 
     return ''
@@ -38,7 +54,7 @@ const getStatus = (todo: Todo): string => {
         return 'not done :('
     }
     const deadLine = todo.creationTimeStamp + todo.duration
-    const remainingTime = deadLine - Math.floor(Date.now() / 1000)
+    const remainingTime = deadLine - Date.now()
     return getWDHM(remainingTime)
 }
 
@@ -54,54 +70,79 @@ const getSvg = (todo: Todo): JSX.Element => {
     }
 }
 
-export const TodoComponent: React.FC<Props> = ({ todoProp }) => {
+interface Props {
+    todoProp: Todo
+    keyProp: number
+    selectTodo: (id: number) => void
+}
 
+export const TodoComponent: React.FC<Props> = ({ todoProp, keyProp, selectTodo }) => {
+
+    const todoRef = useRef<any>()
+    const [isExpanded, setIsExpanded] = useState(false)
+    const [height, setHeight] = useState<number>(0)
+
+    // useEffect(() => {
+    //     if(todoRef) {
+    //         console.log("todoRef", typeof todoRef.current)
+    //         setHeight(todoRef.current.clientHeight)
+    //     }
+    // }, [todoRef])
     return (
-        <TodoCard>
-            <h4 className="title">
+        // <Collapse in={isExpanded} collapsedHeight={height + 10} >
+        <TodoCard
+            isExpanded={isExpanded}
+            ref={todoRef}
+        >
+            <Title
+                className="title"
+            >
                 {todoProp.title}
-            </h4>
-            <div className="status">
+            </Title>
+            <Description
+                onClick={() => setIsExpanded(!isExpanded)}
+                isExpanded={isExpanded}
+            >
+                {todoProp.description}
+            </Description>
+            <Status>
                 {getSvg(todoProp)}
-                <div className="timer">
+                <div style={{ gridArea: 'timer' }}>
                     {todoProp.done ? 'done :)' : getStatus(todoProp)}
                 </div>
-            </div>
-            <Typography className="description">
-                {todoProp.description}
-            </Typography>
+                <IconButton startIcon={<EditIcon />} onClick={() => {selectTodo(keyProp)}}>
+                    EDIT
+                </IconButton>
+            </Status>
+
+            <ExpandIcon 
+                onClick={() => setIsExpanded(!isExpanded)}
+                isExpanded={isExpanded}>
+                <ExpandMoreSharpIcon />
+            </ExpandIcon>
         </TodoCard>
+        // </Collapse>
     )
 }
 
-const TodoCard = styled(Card)`
+const TodoCard = styled(Card) <{ isExpanded: boolean }>`
     margin-top: 0.5em;
-    font-size: 29px;
     padding-left: 0.5em;
-    width: 95%;
+    font-size: 29px;
+    height: fit-content;
+    width: 95% !important;
     display: grid;
     grid-template-columns: 1fr 0.2fr;
-    grid-template-rows: auto 3.6em;
+    grid-template-rows:
+        auto 
+        ${props => props.isExpanded ? 'minmax(3.6em, auto)' : '3.6em'}
+        50px;
     gap: 1px 1px;
     grid-template-areas:
     "title status"
-    "description status";
-
-    .status {
-        padding-left: 0.5em;
-        padding-right: 0.5em;
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 0.2fr;
-        grid-template-areas:
-            "icon"
-            "timer";
-        grid-area: status;
-    }
-
-    .timer {
-        grid-area: timer;
-    }
+    "description status"
+    "arrow arrow";
+    transition: all 0.2s ease-in-out;
 
     svg {
         margin: auto;
@@ -109,20 +150,63 @@ const TodoCard = styled(Card)`
         height: 100%;
         grid-area: icon;
     }
+`;
 
-    .title {
-        margin: 0.5em;
-        padding: auto;
-        height: fit-content;
-    }
 
-    .description {
-        /*https://css-tricks.com/line-clampin/ */
-        line-height: 2em;
+
+const ExpandIcon = styled.div<{ isExpanded: boolean }>`
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    grid-area: arrow;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: ${props => props.isExpanded ? 'rotate(0.5turn)' : 'rotate(0turn)'};
+`;
+
+const Title = styled.h4`
+    margin: 0.5em;
+    padding: auto;
+    height: fit-content;
+`;
+
+const Description = styled.span<{ isExpanded: boolean }>`
+    grid-area: description;
+    cursor: pointer;
+    width: 100%;
+    ${props => props.isExpanded ?
+        ''
+        :
+        `
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+        `
     }
 
 `;
+const Status = styled.div`
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 0.2fr 0.2fr;
+    grid-template-areas:
+        "icon"
+        "timer"
+        "editbutton";
+    grid-area: status;
+    height: fit-content;
+`;
+
+const IconButton = styled(Button)`
+    grid-area: editbutton;
+    padding-left: 1em;
+    padding-right: 1em;
+        svg {
+            width: 1em;
+            height: 1em;
+            margin: 0;
+        }
+`

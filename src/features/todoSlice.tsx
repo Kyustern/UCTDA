@@ -33,6 +33,7 @@ export const todoSlice: any = createSlice({
     reducers: {
         addTodo: (state, {payload}: PayloadAction<Todo> ): void => {
             //add the todo to the graphQL db
+            console.log("ass")
             state.todoList.push(payload)
         },
         editTodo: (state, {payload}: PayloadAction<editTodoPayload>): void => {
@@ -41,12 +42,11 @@ export const todoSlice: any = createSlice({
             //         payload.todo,
             //         ...state.todoList.slice(payload.id + 1),
             //     ]
-
-            
-            console.log("payload", payload)
-
+            // console.log("payload", payload)
+            // console.log("edit")
             const newState = [...state.todoList]
             newState[payload.id] = payload.todo
+            console.log("newState", newState)
             state.todoList = newState
         },
         removeTodo: (state, {payload}: PayloadAction<number>): void => {

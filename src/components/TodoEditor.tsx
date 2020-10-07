@@ -30,7 +30,7 @@ const getRemainingTime = (deadline: string) => {
     return temp
 }
 
-export const TodoEditor: React.FC<Props> = ({todoProp, id, cancelButtonHandler}) => {
+export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler }) => {
 
     const dateinit = (todo?: Todo) => {
         if (todo) {
@@ -41,6 +41,10 @@ export const TodoEditor: React.FC<Props> = ({todoProp, id, cancelButtonHandler})
             }
         }
         return ''
+    }
+
+    const hasDeadlineInit = ():boolean => {
+
     }
 
     const dispatch = useDispatch()
@@ -78,40 +82,47 @@ export const TodoEditor: React.FC<Props> = ({todoProp, id, cancelButtonHandler})
         }
     }
 
+    const addDeadLine = (todo: Todo): Todo => {
+        if (hasDeadline) {
+            if (!showClock) {
+                //duration will be equal to the number of seconds between Date.now and the selected date
+                todo.duration = getRemainingTime(date)
+            } else {
+                //duration is in seconds, we have to convert to milliseconds so it can be compatible with other stuff
+                todo.duration = duration * 1000
+            }
+        }
+        return todo as Todo
+    }
     const validationHandler = () => {
         if (!title || !description) {
             setErrorText('Please give at least a description and a title')
             setShowError(true)
         } else {
-            const todo = {
-                title: title,
-                description: description,
-                done: false,
-                creationTimeStamp: Date.now()
-            } as Todo
-
-            if (hasDeadline) {
-                if (!showClock) {
-                    //duration will be equal to the number of seconds between Date.now and the selected date
-                    todo.duration = getRemainingTime(date)
-                    if (todoProp) {
-                        dispatch(editTodo({todo, id}))
-                    } else {
-                        dispatch(addTodo(todo))
-                    }
-                } else {
-                    //duration is in seconds, we have to convert to milliseconds so it can be compatible with other stuff
-                    todo.duration = duration * 1000
-                    dispatch(addTodo(todo))
-                }
+            if (todoProp) {
+                //edit
+                const todo = addDeadLine({
+                    title: title,
+                    description: description,
+                    done: false,
+                    creationTimeStamp: Date.now()
+                } as Todo)
+                dispatch(editTodo({ todo, id }))
             } else {
-                dispatch(addTodo(todo))
+                //add
+                const todo = {
+                    title: title,
+                    description: description,
+                    done: false,
+                    creationTimeStamp: Date.now()
+                } as Todo
+                // addDeadline(todo)
+                // const todo = addDeadline(todoProp)
+                dispatch(addTodo(addDeadLine(todo)))
             }
-
             cancelButtonHandler()
         }
     }
-
     const checkBoxHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasDeadline(event.target.checked)
     }

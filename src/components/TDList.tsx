@@ -24,9 +24,7 @@ export const TDList: React.FC = () => {
     }, [todos])
 
     const btnHandler = (): void => {
-        dispatch(addTodo(
-            { title: 'first of its kind', description: 'patience is  aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett aaaar erear tttttttttet etzet ee aetaett', done: false } as Todo
-        ))
+        setCreatingTodo(true)
     }
 
     const selectTodo = (id: number) => {

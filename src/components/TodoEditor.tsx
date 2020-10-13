@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import dayjs from 'dayjs'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
 import { Switch } from './Switch'
@@ -21,7 +22,8 @@ interface Props {
 
 const getDateString = (timeStamp: number): string => {
     const dateObj = new Date(timeStamp)
-    return `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`
+    return dayjs(dateObj).format('YYYY-MM-DD')
+    // return `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDay()}`
 }
 
 const getRemainingTime = (deadline: string) => {
@@ -43,8 +45,13 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
         return ''
     }
 
-    const hasDeadlineInit = ():boolean => {
-
+    const hasDeadlineInit = (todo?: Todo):boolean => {
+        if(todo) {
+            if(todo.duration) {
+                return true
+            } else return false
+        }
+        return false
     }
 
     const dispatch = useDispatch()
@@ -55,7 +62,7 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
     const [description, setDescription] = useState(todoProp ? todoProp.description : '')
     const [showError, setShowError] = useState(false)
     const [showClock, setShowClock] = useState(false)
-    const [hasDeadline, setHasDeadline] = useState(false)
+    const [hasDeadline, setHasDeadline] = useState(hasDeadlineInit(todoProp))
     const [duration, setDuration] = useState(todoProp ? todoProp.duration ? todoProp.duration : 604800 : 604800)
 
     const textInputHandler = (event: any, target: string) => {

@@ -7,12 +7,12 @@ import CloseIcon from '@material-ui/icons/Close';
 interface Props {
     isOpen: boolean
     text: string
-    close: (bool: boolean) => void
+    close: () => void
 }
 
 export const SnackBarWrapper: React.FC<Props> = ({isOpen, text, close}) => {
     
-    const handleClose = (event: React.SyntheticEvent | React.MouseEvent, reason?: string) => close(false);
+    // const handleClose = (event: React.SyntheticEvent | React.MouseEvent, reason?: string) => close();
 
     return(
         <CustomSnackbar
@@ -23,10 +23,15 @@ export const SnackBarWrapper: React.FC<Props> = ({isOpen, text, close}) => {
         color="red"
         open={isOpen}
         autoHideDuration={6000}
-        onClose={handleClose}
+        // onClose={close}
         message={text}
         action={
-            <IconButton size="small" aria-label="close" color="inherit" onClick={handleClose}>
+            <IconButton 
+                size="small" 
+                aria-label="close" 
+                color="inherit"
+                onClick={close}
+                >
               <CloseIcon fontSize="small" />
             </IconButton>
         }

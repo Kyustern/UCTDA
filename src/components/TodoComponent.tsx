@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import styled from 'styled-components';
 import { Todo } from '../app/types';
 import { Button, Card } from '@material-ui/core';
@@ -126,7 +126,7 @@ export const TodoComponent: React.FC<Props> = ({ todoProp, keyProp, selectTodo }
 }
 
 const TodoCard = styled(Card) <{ isExpanded: boolean }>`
-    margin-top: 0.5em;
+    margin-bottom: 0.7em;
     padding-left: 0.5em;
     font-size: 29px;
     height: fit-content;
@@ -204,9 +204,9 @@ const IconButton = styled(Button)`
     grid-area: editbutton;
     padding-left: 1em;
     padding-right: 1em;
-        svg {
-            width: 1em;
-            height: 1em;
-            margin: 0;
-        }
+    svg {
+        width: 1em;
+        height: 1em;
+        margin: 0;
+    }
 `

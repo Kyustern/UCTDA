@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { Button } from '@material-ui/core'
 
 interface Props {
-    onOff: boolean
-    setBoolean: (onOff: boolean) => void
+    bool: boolean
+    setBoolean: (bool: boolean) => void
     buttonText: {
         left: string
         right: string
@@ -12,21 +12,21 @@ interface Props {
     disabled?: boolean
 }
 
-export const Switch: React.FC<Props> = ({ onOff, setBoolean, buttonText, disabled }) => {
+export const Switch: React.FC<Props> = ({ bool, setBoolean, buttonText, disabled }) => {
     return (
         <Wrapper>
             <Button
                 disabled={disabled}
-                color={onOff ? 'default' : 'secondary'}
-                variant={onOff ? 'outlined' : 'contained'}
+                color={bool ? 'default' : 'secondary'}
+                variant={bool ? 'outlined' : 'contained'}
                 onClick={() => setBoolean(false)}
             >
                 {buttonText.left}
             </Button>
             <Button
                 disabled={disabled}
-                color={onOff ? 'secondary' : 'default'}
-                variant={onOff ? 'contained' : 'outlined'}
+                color={bool ? 'secondary' : 'default'}
+                variant={bool ? 'contained' : 'outlined'}
                 onClick={() => setBoolean(true)}
             >
                 {buttonText.right}

@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { type } from 'os';
-import todosReducer from '../features/todoSlice'
+import { todosReducer } from '../features/todoSlice'
+import { authReducer } from '../features/authSlice'
 
 // const loggerMiddleware = store => next => action => {
 //     console.log("Action triggered : ", action);
@@ -9,7 +9,8 @@ import todosReducer from '../features/todoSlice'
 
 export const store = configureStore({
     reducer: {
-        todos: todosReducer
+        todos: todosReducer,
+        auth: authReducer
     },
     // middleware:[loggerMiddleware],
     devTools: process.env.NODE_ENV !== "development" ? false : true

@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
 import { editTodoPayload, Todo } from '../app/types'
 // import { addTodoAction, rmTodoAction, Todo } from '../app/types'
 
@@ -9,34 +8,16 @@ interface SliceType {
     todoList: Todo[]
 }
 
-const firstTodo: Todo = { 
-    title: 'first of its kind', 
-    description: 'un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté un texte un peu long, mais pas trop quand même ta capté', 
-    done: false,
-    duration: 89757,
-    creationTimeStamp: 1600812494847
-}
-
-const second: Todo = { 
-    title: 'first of its kind', 
-    description: 'patience is virtue and fffffffffffucjkckgvsonvlsc', 
-    done: false,
-    duration: undefined,
-    creationTimeStamp: 1600812494847
-}
-
 export const todoSlice: any = createSlice({
     name: 'todos',
 
-    initialState: {todoList: [firstTodo, second]} as SliceType,
+    initialState: { todoList: [] } as SliceType,
 
     reducers: {
-        addTodo: (state, {payload}: PayloadAction<Todo> ): void => {
-            //add the todo to the graphQL db
-            console.log("ass")
+        addTodo: (state, { payload }: PayloadAction<Todo>): void => {
             state.todoList.push(payload)
         },
-        editTodo: (state, {payload}: PayloadAction<editTodoPayload>): void => {
+        editTodo: (state, { payload }: PayloadAction<editTodoPayload>): void => {
             //     state.todoList: [
             //         ...state.todoList.slice(0, payload.id),
             //         payload.todo,
@@ -49,7 +30,7 @@ export const todoSlice: any = createSlice({
             console.log("newState", newState)
             state.todoList = newState
         },
-        removeTodo: (state, {payload}: PayloadAction<number>): void => {
+        removeTodo: (state, { payload }: PayloadAction<number>): void => {
             state.todoList.splice(payload)
         }
     }
@@ -57,7 +38,13 @@ export const todoSlice: any = createSlice({
 
 export const { addTodo, removeTodo, editTodo } = todoSlice.actions
 
-//   w   t   f
 export const selectTodos = (state: any): Todo[] => state.todos.todoList
 
-export default todoSlice.reducer
+export const todosReducer = todoSlice.reducer
+
+
+                // return [
+                //     ...state.todos.todoArray.slice(0, payload.id),
+                //     payload,
+                //     ...state.todos.todoArray.slice(payload.id + 1),
+                // ]

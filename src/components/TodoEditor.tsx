@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import styled from 'styled-components';
-import { Todo } from '../app/types';
-import { Switch } from './Switch'
+import Loader from './Loader'
 import { Card, Input, Button, Checkbox } from '@material-ui/core'
-import { DurationInput } from './ImprovisedDurationInput';
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import { useDispatch } from 'react-redux';
-import { addTodo, editTodo } from '../features/todoSlice';
-import { SnackBarWrapper } from './SnackBarWrapper';
+import { gql, useMutation } from '@apollo/client';
 
-//lol
-//07 82 56 07 14
+import { Todo } from '../app/types';
+import { Switch } from './Switch'
+import { DurationInput } from './ImprovisedDurationInput';
+import { SnackBarWrapper } from './SnackBarWrapper';
 
 interface Props {
     todoProp?: Todo
@@ -32,7 +31,23 @@ const getRemainingTime = (deadline: string) => {
     return temp
 }
 
+const ADD_TODO = gql`
+mutation CreateTodo($todo: TodoInput!) {
+    createTodo(todo: $todo) {
+        title
+    }
+}
+`
+const EDIT_TODO = gql`
+mutation ReplaceTodo($todo: TodoInput!, $id: String!) {
+    replaceTodo(todo: $todo, id: $id)
+}
+`
+
 export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler }) => {
+
+    const [createTodo, createTodoState] = useMutation(ADD_TODO)
+    const [editTodo, editTodoState] = useMutation(EDIT_TODO)
 
     const dateinit = (todo?: Todo) => {
         if (todo) {
@@ -45,9 +60,9 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
         return ''
     }
 
-    const hasDeadlineInit = (todo?: Todo):boolean => {
-        if(todo) {
-            if(todo.duration) {
+    const hasDeadlineInit = (todo?: Todo): boolean => {
+        if (todo) {
+            if (todo.duration) {
                 return true
             } else return false
         }
@@ -101,7 +116,16 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
         }
         return todo as Todo
     }
-    const validationHandler = () => {
+
+    const checkBoxHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHasDeadline(event.target.checked)
+    }
+
+    const getterCB = (input: number) => {
+        setDuration(input)
+    }
+
+    const validationHandler = async () => {
         if (!title || !description) {
             setErrorText('Please give at least a description and a title')
             setShowError(true)
@@ -112,36 +136,32 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
                     title: title,
                     description: description,
                     done: false,
-                    creationTimeStamp: Date.now()
+                    creationTimeStamp: Date.now(),
+                    creatorId: "creatorIdPlaceHolder"
                 } as Todo)
-                dispatch(editTodo({ todo, id }))
+                const res = await editTodo({variables: { "todo": todo, "id": todoProp._id }})
+                // dispatch(editTodo({ todo, id }))
             } else {
                 //add
                 const todo = {
                     title: title,
                     description: description,
                     done: false,
-                    creationTimeStamp: Date.now()
+                    creationTimeStamp: Date.now(),
+                    creatorId: "creatorIdPlaceHolder"
                 } as Todo
-                // addDeadline(todo)
-                // const todo = addDeadline(todoProp)
-                dispatch(addTodo(addDeadLine(todo)))
+                console.log('add');
+                
+                const res = await createTodo({variables: { "todo": todo}})
             }
             cancelButtonHandler()
         }
-    }
-    const checkBoxHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setHasDeadline(event.target.checked)
-    }
-
-    const getterCB = (input: number) => {
-        setDuration(input)
     }
 
     return (
         <>
             <SnackBarWrapper
-                close={(bool) => setShowError(bool)}
+                close={() => setShowError(false)}
                 text={errorText}
                 isOpen={showError}
             />
@@ -166,7 +186,7 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
                     />
                     <Switch
                         disabled={!hasDeadline}
-                        onOff={showClock}
+                        bool={showClock}
                         setBoolean={setShowClock}
                         buttonText={{ left: 'Date', right: 'Time' }}
                     />
@@ -189,10 +209,15 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
                         aria-label="Add task"
                         startIcon={<AddIcon />}
                     >
-                        Confirm
+                        {
+                        createTodoState.loading || editTodoState.loading ? 
+                            <Loader></Loader> 
+                        : 
+                            'CONFIRM'
+                        }
                     </Button>
                     <Button
-                        onClick={() => cancelButtonHandler()}
+                        onClick={cancelButtonHandler}
                         aria-label="Cancel task"
                         variant="outlined"
                         startIcon={<CloseIcon />}
@@ -206,6 +231,7 @@ export const TodoEditor: React.FC<Props> = ({ todoProp, id, cancelButtonHandler 
 }
 
 const TodoCard = styled(Card)`
+    margin-bottom: 1em;
     padding: 0 0.25em 0 0.25em;
     width: 95%;
     display: grid;
